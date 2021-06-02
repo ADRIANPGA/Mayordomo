@@ -7,9 +7,9 @@ import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.entities.VoiceChannel;
 
-public class Utils {
+public class BasicUtils {
 
-    private Utils() {
+    private BasicUtils() {
         throw new IllegalStateException("Utility class");
     }
 

@@ -6,10 +6,6 @@ import net.dv8tion.jda.api.entities.*;
 
 public class ChatUtils {
 
-    private ChatUtils() {
-        throw new IllegalStateException("Utility class");
-    }
-
     public static final String BELL = "\uD83D\uDD14";
     public static final String OM_SYMBOL = "\uD83D\uDD49";
     public static final String CD = "\uD83D\uDCBF";
@@ -48,6 +44,10 @@ public class ChatUtils {
     public static final String ARROW_RIGHT = "\uE234";
     public static final String PUSHPIN = "\uD83D\uDCCD";
     public static final String YUM = "\uD83D\uDE0B";
+
+    private ChatUtils() {
+        throw new IllegalStateException("Utility class");
+    }
 
     public static String userDiscrimSet(User u) {
         return stripFormatting(u.getName()) + "#" + u.getDiscriminator();

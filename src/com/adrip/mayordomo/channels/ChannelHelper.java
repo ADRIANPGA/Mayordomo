@@ -6,12 +6,12 @@ import net.dv8tion.jda.api.entities.VoiceChannel;
 import java.util.Iterator;
 import java.util.LinkedList;
 
-public class ChannelManager {
-
-    private ChannelManager() {
-    }
+public class ChannelHelper {
 
     private static LinkedList<ChannelGestor> channelsActive = new LinkedList<>();
+
+    private ChannelHelper() {
+    }
 
     public static synchronized void addChannelToList(Member member, VoiceChannel channel) {
         if (!channelsActive.contains(new ChannelGestor(channel, member)))
@@ -83,7 +83,7 @@ public class ChannelManager {
     }
 
     public static int getChannelsActive() {
-        return ChannelManager.channelsActive.size();
+        return ChannelHelper.channelsActive.size();
     }
 
 }

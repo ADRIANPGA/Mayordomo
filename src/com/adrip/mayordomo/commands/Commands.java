@@ -1,11 +1,11 @@
 package com.adrip.mayordomo.commands;
 
 import com.adrip.mayordomo.Main;
-import com.adrip.mayordomo.channels.ChannelManager;
+import com.adrip.mayordomo.channels.ChannelHelper;
 import com.adrip.mayordomo.controllers.ModelController;
 import com.adrip.mayordomo.exceptions.DatabaseNotAvaliableException;
 import com.adrip.mayordomo.utils.ChatUtils;
-import com.adrip.mayordomo.utils.Utils;
+import com.adrip.mayordomo.utils.BasicUtils;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.*;
 
@@ -32,18 +32,18 @@ public class Commands {
     }
 
     public void commandCREATE() {
-        if (this.args.length == 0 || !Utils.isANum(args[0])) {
+        if (this.args.length == 0 || !BasicUtils.isANum(args[0])) {
             ChatUtils.sendCreateSyntaxHelp(aliaseUsed, textChannel);
             return;
         }
 
         int capacity = Integer.parseInt(args[0]);
-        if (!Utils.checkChannelCapacity(capacity, textChannel, message))
+        if (!BasicUtils.checkChannelCapacity(capacity, textChannel, message))
             return;
 
-        if (ChannelManager.isMemberInList(member)) {
+        if (ChannelHelper.isMemberInList(member)) {
             ChatUtils.sendWarningMessage(textChannel,
-                    "Ya tienes un canal creado (" + ChannelManager.getMemberChannel(member).getName() + ")");
+                    "Ya tienes un canal creado (" + ChannelHelper.getMemberChannel(member).getName() + ")");
             return;
         }
 
@@ -58,7 +58,7 @@ public class Commands {
 
         VoiceChannel voiceChannel = guild.createVoiceChannel(channelName.toString()).setParent(textChannel.getParent())
                 .setUserlimit(capacity).setBitrate(guild.getMaxBitrate()).complete();
-        ChannelManager.addChannelToList(member, voiceChannel);
+        ChannelHelper.addChannelToList(member, voiceChannel);
         textChannel.sendMessage(ChatUtils.APPROVE + " Canal " + channelName.toString() + " creado con �xito.")
                 .complete();
 
@@ -81,10 +81,10 @@ public class Commands {
         new Timer().schedule(new TimerTask() {
             @Override
             public void run() {
-                if (ChannelManager.isChannelInList(newVoiceChannel) && Utils.canDeleteChannel(newVoiceChannel)) {
+                if (ChannelHelper.isChannelInList(newVoiceChannel) && BasicUtils.canDeleteChannel(newVoiceChannel)) {
                     ChatUtils.sendTimeoutMessage(textChannel, "El canal " + newVoiceChannel.getName()
                             + " ha sido borrado ya que nadie se ha conectado " + ChatUtils.PENSIVE);
-                    ChannelManager.deleteChannel(newVoiceChannel);
+                    ChannelHelper.deleteChannel(newVoiceChannel);
                     ChatUtils.react(message, ChatUtils.F);
                 }
                 this.cancel();
@@ -98,11 +98,11 @@ public class Commands {
         StringBuilder channels = new StringBuilder();
         embed.setTitle(ChatUtils.BELL + " Resumen de canales");
         embed.setFooter("Usa " + this.aliaseUsed + "help para ver todos los comandos");
-        while (ChannelManager.getChannelAt(count) != null) {
+        while (ChannelHelper.getChannelAt(count) != null) {
             if (count != 0)
                 channels.append("\n");
-            channels.append((count + 1) + " - " + ChannelManager.getChannelAt(count).getVoiceChannel().getName()
-                    + " -> " + ChannelManager.getChannelAt(count).getOwner().getUser().getName());
+            channels.append((count + 1) + " - " + ChannelHelper.getChannelAt(count).getVoiceChannel().getName()
+                    + " -> " + ChannelHelper.getChannelAt(count).getOwner().getUser().getName());
             count++;
         }
         if (count == 0)
@@ -154,20 +154,20 @@ public class Commands {
 
     public void commandCHANNELCAPACITY() {
 
-        if (args.length != 1 || !Utils.isANum(args[0])) {
+        if (args.length != 1 || !BasicUtils.isANum(args[0])) {
             ChatUtils.sendWarningMessage(textChannel, "Usa " + this.aliaseUsed + " (nueva capacidad)");
             return;
         }
 
-        if (ChannelManager.isMemberInList(member)) {
+        if (ChannelHelper.isMemberInList(member)) {
             int capacity = Integer.parseInt(args[0]);
             if (capacity < 0 || capacity > 99) {
                 textChannel.sendMessage(ChatUtils.WARNING + " La capacidad del canal no puede ser " + capacity
                         + ". Debe ser entre 1 y 99").complete();
                 return;
             }
-            VoiceChannel channel = ChannelManager.getMemberChannel(member);
-            Utils.addaptCapacityInName(channel, String.valueOf(channel.getUserLimit()), String.valueOf(capacity));
+            VoiceChannel channel = ChannelHelper.getMemberChannel(member);
+            BasicUtils.addaptCapacityInName(channel, String.valueOf(channel.getUserLimit()), String.valueOf(capacity));
             channel.getManager().setUserLimit(capacity).complete();
             ChatUtils.sendCorrectMessage(textChannel,
                     "Se ha cambiado la capacidad de " + channel.getName() + " a " + capacity + " personas");
@@ -185,12 +185,12 @@ public class Commands {
             return;
         }
 
-        if (ChannelManager.isMemberInList(member)) {
+        if (ChannelHelper.isMemberInList(member)) {
             StringBuilder newName = new StringBuilder();
             for (int i = 0; i < this.args.length; i++)
                 newName.append(" ").append(args[i]);
             newName.deleteCharAt(0);
-            VoiceChannel channel = ChannelManager.getMemberChannel(member);
+            VoiceChannel channel = ChannelHelper.getMemberChannel(member);
             String oldName = channel.getName();
             channel.getManager().setName(newName.toString()).complete();
             ChatUtils.sendCorrectMessage(textChannel, "Se ha cambiado el nombre de " + oldName + " a " + newName);
@@ -266,6 +266,7 @@ public class Commands {
                         break;
                     default:
                         this.showUniqueSyntax();
+                        break;
                 }
                 break;
             case 2:
@@ -276,6 +277,7 @@ public class Commands {
                 break;
             default:
                 this.showUniqueSyntax();
+                break;
         }
     }
 

@@ -1,7 +1,6 @@
 package com.adrip.mayordomo.database;
 
 import com.adrip.mayordomo.Main;
-import com.adrip.mayordomo.controllers.Config;
 import com.adrip.mayordomo.exceptions.DatabaseNotAvaliableException;
 import net.dv8tion.jda.api.entities.Guild;
 
@@ -94,7 +93,6 @@ public class DBConnection {
                 if (stat != null) stat.close();
             } catch (Exception exc) {
             }
-            ;
             throw new DatabaseNotAvaliableException("Unable to create channels table.");
         }
     }

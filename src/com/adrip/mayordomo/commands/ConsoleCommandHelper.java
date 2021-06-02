@@ -5,11 +5,11 @@ import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.List;
 
-public class ConsoleCommandGestor {
+public class ConsoleCommandHelper {
 
     private static List<String> consoleCommands = Arrays.asList("say", "on", "off", "toggle", "status");
 
-    private ConsoleCommandGestor() {
+    private ConsoleCommandHelper() {
     }
 
     public static void execute(String commandPrefix, String[] args) throws NoSuchMethodException,

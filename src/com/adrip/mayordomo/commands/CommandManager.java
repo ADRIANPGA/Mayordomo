@@ -1,6 +1,6 @@
 package com.adrip.mayordomo.commands;
 
-import com.adrip.mayordomo.utils.Utils;
+import com.adrip.mayordomo.utils.BasicUtils;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Message;
@@ -30,7 +30,7 @@ public class CommandManager {
     }
 
     public boolean checkPermissions() {
-        return Utils.hasPermission(member, CommandManager.isAnAdminCommand(this.commandType));
+        return BasicUtils.hasPermission(member, CommandManager.isAnAdminCommand(this.commandType));
     }
 
     public static void registerCommands() {

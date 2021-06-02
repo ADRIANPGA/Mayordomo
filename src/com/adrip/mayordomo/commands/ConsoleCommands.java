@@ -1,7 +1,7 @@
 package com.adrip.mayordomo.commands;
 
 import com.adrip.mayordomo.Main;
-import com.adrip.mayordomo.channels.ChannelManager;
+import com.adrip.mayordomo.channels.ChannelHelper;
 import com.adrip.mayordomo.utils.ChatUtils;
 import net.dv8tion.jda.api.entities.ChannelType;
 import net.dv8tion.jda.api.entities.TextChannel;
@@ -54,7 +54,7 @@ public class ConsoleCommands {
     }
 
     public void commandSTATUS() {
-        System.out.println("Manteniendo " + ChannelManager.getChannelsActive() + " canales en "
+        System.out.println("Manteniendo " + ChannelHelper.getChannelsActive() + " canales en "
                 + Main.getJda().getGuilds().size() + " servidores diferentes.");
     }
 

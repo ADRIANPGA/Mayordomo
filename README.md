@@ -31,4 +31,3 @@ Bot para la gestión de canales temporales en discord
   <img src='https://forthebadge.com/images/badges/made-with-java.svg'>
   <img align='right' src='https://forthebadge.com/images/badges/cc-nc-sa.svg'>
 </div>
-

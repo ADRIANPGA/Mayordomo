@@ -1,7 +1,9 @@
 package com.adrip.mayordomo;
 
+import com.adrip.mayordomo.channels.ChannelListener;
+import com.adrip.mayordomo.commands.CommandListener;
 import com.adrip.mayordomo.commands.CommandManager;
-import com.adrip.mayordomo.commands.ConsoleCommandGestor;
+import com.adrip.mayordomo.commands.ConsoleCommandHelper;
 import com.adrip.mayordomo.controllers.Config;
 import com.adrip.mayordomo.controllers.ModelController;
 import com.adrip.mayordomo.exceptions.ConfigFailsException;
@@ -22,6 +24,9 @@ import java.util.StringTokenizer;
 
 public class Main {
 
+    /* Instancia de JDA generada al construir el bot. */
+    private static JDA jda;
+
     /* Valores obtenidos de la configuracion. */
     private static boolean debug;
     private static String token;
@@ -34,29 +39,33 @@ public class Main {
     private static String dbUser;
     private static String dbPassword;
 
-    private static JDA jda;
-
     public static void main(String[] args) throws LoginException, ConfigFailsException, DatabaseNotAvaliableException {
-
+        /* Se mapean todos los campos de los ficheros de configuracion. */
         Main.startConfig();
 
-        JDABuilder builder = JDABuilder.createDefault(token).setEnabledIntents(GatewayIntent.GUILD_MEMBERS,
+        /* Se registran los comandos con sus alias. */
+        CommandManager.registerCommands();
+        /* Se inicia la conexcion con la base de datos. */
+        ModelController.getDBAccess().initDB();
+
+        /* Se construye el objeto JDA con el token obtenido de la configuracion y los listeners necesarios. */
+        JDABuilder builder = JDABuilder.createDefault(Main.token).setEnabledIntents(GatewayIntent.GUILD_MEMBERS,
                 GatewayIntent.GUILD_VOICE_STATES, GatewayIntent.GUILD_EMOJIS,
                 GatewayIntent.GUILD_MESSAGES, GatewayIntent.GUILD_MESSAGE_REACTIONS,
                 GatewayIntent.DIRECT_MESSAGES, GatewayIntent.DIRECT_MESSAGE_REACTIONS)
                 .setMemberCachePolicy(MemberCachePolicy.ALL);
-
-        CommandManager.registerCommands();
-        builder.addEventListeners(new com.adrip.mayordomo.channels.ChannelListener());
-        builder.addEventListeners(new com.adrip.mayordomo.commands.CommandListener());
-        builder.setToken(token);
-        jda = builder.build();
+        builder.addEventListeners(new ChannelListener());
+        builder.addEventListeners(new CommandListener());
+        builder.setToken(Main.token);
+        Main.jda = builder.build();
         builder.setAutoReconnect(true);
         builder.setRequestTimeoutRetry(false);
-        ModelController.getDBAccess().initDB();
+
+        /* Se marcan las opciones visuales iniciales (Reconfigurables por terminal). */
         Main.setListeningActivity("tus necesidades.");
-        Main.setStatus(OnlineStatus.DO_NOT_DISTURB);
-        Main.readChatCommandsFromStdIn();
+        Main.setStatus(OnlineStatus.ONLINE);
+
+        //new Main().readChatCommandsFromStdIn();
     }
 
     private static void startConfig() throws ConfigFailsException {
@@ -69,6 +78,14 @@ public class Main {
         Main.dbPort = Config.getDatabasePort();
         Main.dbUser = Config.getDatabaseUser();
         Main.dbPassword = Config.getDatabasePassword();
+    }
+
+    public static String getOwnerID() {
+        return Main.ownerID;
+    }
+
+    public static boolean isOwner(String userID) {
+        return Main.ownerID.equalsIgnoreCase(userID);
     }
 
     public static String getDatabaseHost() {
@@ -91,35 +108,32 @@ public class Main {
         return Main.dbPassword;
     }
 
+    public static JDA getJda() {
+        return Main.jda;
+    }
+
     public static void setPlayingActivity(String input) {
-        jda.getPresence().setActivity(Activity.playing(input));
+        Main.jda.getPresence().setActivity(Activity.playing(input));
     }
 
     public static void setListeningActivity(String input) {
-        jda.getPresence().setActivity(Activity.listening(input));
+        Main.jda.getPresence().setActivity(Activity.listening(input));
     }
 
     public static void setWatchingActivity(String input) {
-        jda.getPresence().setActivity(Activity.watching(input));
-    }
-
-    public static JDA getJda() {
-        return jda;
+        Main.jda.getPresence().setActivity(Activity.watching(input));
     }
 
     public static void setStatus(OnlineStatus onlineStatus) {
-        jda.getPresence().setStatus(onlineStatus);
+        Main.jda.getPresence().setStatus(onlineStatus);
     }
 
-    public static String getOwnerID() {
-        return ownerID;
+    public static void debug(String input) {
+        if (debug)
+            System.out.println(input);
     }
 
-    public static boolean isOwner(String userID) {
-        return ownerID.equalsIgnoreCase(userID);
-    }
-
-    private static void readChatCommandsFromStdIn() {
+    private void readChatCommandsFromStdIn() {
         boolean inputReady;
         while (true) {
             inputReady = false;
@@ -133,6 +147,7 @@ public class Main {
                         input = standardInput.readLine();
                     }
                 } catch (IOException e) {
+                    debug("Cannot access to console");
                 }
             }
             if (input != null)
@@ -140,16 +155,17 @@ public class Main {
         }
     }
 
-    private static void processConsoleCommand(String input) {
+    private void processConsoleCommand(String input) {
         StringTokenizer st = new StringTokenizer(input);
         if (st.hasMoreTokens()) {
             LinkedList<String> commandArgs = new LinkedList<>();
             String commandPrefix = st.nextToken().toLowerCase();
-            if (ConsoleCommandGestor.isAValidConsoleCommand(commandPrefix)) {
+            if (ConsoleCommandHelper.isAValidConsoleCommand(commandPrefix)) {
                 while (st.hasMoreTokens())
                     commandArgs.add(st.nextToken());
                 try {
-                    ConsoleCommandGestor.execute(commandPrefix, commandArgs.toArray(new String[commandArgs.size()]));
+                    String[] commandsArray = new String[commandArgs.size()];
+                    ConsoleCommandHelper.execute(commandPrefix, commandsArray);
                 } catch (Exception e) {
                     System.out.println("Error: " + e.getMessage());
                 }
@@ -160,8 +176,4 @@ public class Main {
 
     }
 
-    public static void debug(String input) {
-        if (debug)
-            System.out.println(input);
-    }
 }

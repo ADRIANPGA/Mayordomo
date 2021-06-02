@@ -4,7 +4,7 @@ import com.adrip.mayordomo.Main;
 import com.adrip.mayordomo.controllers.ModelController;
 import com.adrip.mayordomo.exceptions.DatabaseNotAvaliableException;
 import com.adrip.mayordomo.utils.ChatUtils;
-import com.adrip.mayordomo.utils.Utils;
+import com.adrip.mayordomo.utils.BasicUtils;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.entities.VoiceChannel;
@@ -19,23 +19,23 @@ public class ChannelListener extends ListenerAdapter {
     @Override
     public synchronized void onGuildVoiceLeave(GuildVoiceLeaveEvent event) {
         VoiceChannel voiceChannel = event.getChannelLeft();
-        if (ChannelManager.isChannelInList(voiceChannel) && Utils.canDeleteChannel(voiceChannel))
-            ChannelManager.deleteChannel(voiceChannel);
+        if (ChannelHelper.isChannelInList(voiceChannel) && BasicUtils.canDeleteChannel(voiceChannel))
+            ChannelHelper.deleteChannel(voiceChannel);
     }
 
     @Override
     public synchronized void onGuildVoiceMove(GuildVoiceMoveEvent event) {
         VoiceChannel voiceChannel = event.getChannelLeft();
-        if (ChannelManager.isChannelInList(voiceChannel) && Utils.canDeleteChannel(voiceChannel)) {
-            ChannelManager.deleteChannel(voiceChannel);
+        if (ChannelHelper.isChannelInList(voiceChannel) && BasicUtils.canDeleteChannel(voiceChannel)) {
+            ChannelHelper.deleteChannel(voiceChannel);
         }
     }
 
     @Override
     public synchronized void onVoiceChannelDelete(VoiceChannelDeleteEvent event) {
         VoiceChannel voiceChannel = event.getChannel();
-        if (ChannelManager.isChannelInList(voiceChannel)) {
-            ChannelManager.channelDeletedManually(voiceChannel);
+        if (ChannelHelper.isChannelInList(voiceChannel)) {
+            ChannelHelper.channelDeletedManually(voiceChannel);
         }
     }
 
