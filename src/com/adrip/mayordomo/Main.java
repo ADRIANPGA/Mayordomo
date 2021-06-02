@@ -65,7 +65,7 @@ public class Main {
         Main.setListeningActivity("tus necesidades.");
         Main.setStatus(OnlineStatus.ONLINE);
 
-        //new Main().readChatCommandsFromStdIn();
+        new Main().readChatCommandsFromStdIn();
     }
 
     private static void startConfig() throws ConfigFailsException {

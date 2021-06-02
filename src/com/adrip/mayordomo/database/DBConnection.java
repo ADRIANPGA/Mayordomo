@@ -117,7 +117,6 @@ public class DBConnection {
                 if (stat != null) stat.close();
             } catch (Exception exc) {
             }
-            ;
             throw new DatabaseNotAvaliableException("Unable to create guilds table.");
         }
     }

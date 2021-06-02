@@ -7,7 +7,11 @@ import com.adrip.mayordomo.exceptions.DatabaseNotAvaliableException;
 import com.adrip.mayordomo.utils.ChatUtils;
 import com.adrip.mayordomo.utils.BasicUtils;
 import net.dv8tion.jda.api.EmbedBuilder;
-import net.dv8tion.jda.api.entities.*;
+import net.dv8tion.jda.api.entities.Message;
+import net.dv8tion.jda.api.entities.Member;
+import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.entities.TextChannel;
+import net.dv8tion.jda.api.entities.VoiceChannel;
 
 import java.util.Timer;
 import java.util.TimerTask;

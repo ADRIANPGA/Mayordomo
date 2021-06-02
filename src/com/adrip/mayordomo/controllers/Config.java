@@ -13,6 +13,7 @@ import java.util.Properties;
 
 public class Config {
 
+    /* Objetos de consulta a los ficheros de configuracion. */
     private static Properties properties = new Properties();
     private static Properties secretProperties = new Properties();
 
@@ -23,8 +24,8 @@ public class Config {
 
     private static Properties loadInputConfig(String fileName) throws ConfigFailsException {
         Properties prop = new Properties();
-
         try {
+            /* Se copia fuera del jar la primera vez que se ejecuta o si se ha borrado. */
             File file = new File(fileName);
             if (!file.exists())
                 Files.copy(Paths.get("resources/properties/" + fileName), file.toPath(),
@@ -37,7 +38,6 @@ public class Config {
             e.printStackTrace();
             throw new ConfigFailsException("Error while loading " + fileName + ".");
         }
-
         return prop;
     }
 
@@ -46,7 +46,7 @@ public class Config {
     }
 
     public static String getToken() throws ConfigFailsException {
-        if(Config.getBotNumber() == 0)
+        if (Config.getBotNumber() == 0)
             return Config.getProp("mayordomo-token", true);
         return Config.getProp("mayordub-token", true);
     }
