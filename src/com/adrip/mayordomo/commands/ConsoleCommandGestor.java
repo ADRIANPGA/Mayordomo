@@ -6,22 +6,22 @@ import java.util.Arrays;
 import java.util.List;
 
 public class ConsoleCommandGestor {
-	
-	private static List<String> consoleCommands = Arrays.asList("say", "on", "off", "toggle", "status");
 
-	private ConsoleCommandGestor() {
-	}
+    private static List<String> consoleCommands = Arrays.asList("say", "on", "off", "toggle", "status");
 
-	public static void execute(String commandPrefix, String[] args) throws NoSuchMethodException,
-			IllegalAccessException, InvocationTargetException {
-		ConsoleCommands command = new ConsoleCommands(commandPrefix, args);
-		String methodName = "command" + commandPrefix.toUpperCase();
-		Method method = command.getClass().getMethod(methodName);
-		method.invoke(command);
-	}
-	
-	public static boolean isAValidConsoleCommand(String prefix) {
-		return consoleCommands.contains(prefix);
-	}
-	
+    private ConsoleCommandGestor() {
+    }
+
+    public static void execute(String commandPrefix, String[] args) throws NoSuchMethodException,
+            IllegalAccessException, InvocationTargetException {
+        ConsoleCommands command = new ConsoleCommands(commandPrefix, args);
+        String methodName = "command" + commandPrefix.toUpperCase();
+        Method method = command.getClass().getMethod(methodName);
+        method.invoke(command);
+    }
+
+    public static boolean isAValidConsoleCommand(String prefix) {
+        return consoleCommands.contains(prefix);
+    }
+
 }
