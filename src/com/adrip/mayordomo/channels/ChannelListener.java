@@ -1,7 +1,7 @@
 package com.adrip.mayordomo.channels;
 
 import com.adrip.mayordomo.Main;
-import com.adrip.mayordomo.controllers.ModelController;
+import com.adrip.mayordomo.model.ModelController;
 import com.adrip.mayordomo.exceptions.DatabaseNotAvaliableException;
 import com.adrip.mayordomo.utils.ChatUtils;
 import com.adrip.mayordomo.utils.BasicUtils;

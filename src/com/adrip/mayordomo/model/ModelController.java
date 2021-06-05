@@ -1,7 +1,6 @@
-package com.adrip.mayordomo.controllers;
+package com.adrip.mayordomo.model;
 
 import com.adrip.mayordomo.Main;
-import com.adrip.mayordomo.database.DBConnection;
 import com.adrip.mayordomo.exceptions.DatabaseNotAvaliableException;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.TextChannel;
@@ -26,8 +25,7 @@ public class ModelController {
     }
 
     public void initDB() throws DatabaseNotAvaliableException {
-        database.createChannelsTable();
-        database.createGuildsTable();
+        this.database.createTables();
         Main.debug("All tables are created if not yet.");
     }
 

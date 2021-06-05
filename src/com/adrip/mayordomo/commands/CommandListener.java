@@ -1,7 +1,7 @@
 package com.adrip.mayordomo.commands;
 
 import com.adrip.mayordomo.Main;
-import com.adrip.mayordomo.controllers.ModelController;
+import com.adrip.mayordomo.model.ModelController;
 import com.adrip.mayordomo.exceptions.DatabaseNotAvaliableException;
 import com.adrip.mayordomo.utils.ChatUtils;
 import net.dv8tion.jda.api.entities.Message;

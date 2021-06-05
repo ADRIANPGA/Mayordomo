@@ -1,4 +1,4 @@
-package com.adrip.mayordomo.controllers;
+package com.adrip.mayordomo.config;
 
 import com.adrip.mayordomo.exceptions.ConfigFailsException;
 

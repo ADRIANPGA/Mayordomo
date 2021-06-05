@@ -11,14 +11,15 @@ import java.util.LinkedList;
 
 public class CommandManager {
 
-    private static LinkedList<CommandGestor> commandsList = new LinkedList<>();
 
-    private Member member;
-    private Guild guild;
-    private Message message;
-    private TextChannel textChannel;
-    private CommandType commandType;
-    private String mainAlias;
+    private static final LinkedList<CommandGestor> commandsList = new LinkedList<>();
+
+    private final Member member;
+    private final Guild guild;
+    private final Message message;
+    private final TextChannel textChannel;
+    private final CommandType commandType;
+    private final String mainAlias;
 
     public CommandManager(Member member, Guild guild, Message message, TextChannel textChannel, String anyPrefix) {
         this.member = member;
@@ -31,6 +32,35 @@ public class CommandManager {
 
     public boolean checkPermissions() {
         return BasicUtils.hasPermission(member, CommandManager.isAnAdminCommand(this.commandType));
+    }
+
+    public CommandType getCommandType(String commandPrefix) {
+        for (CommandGestor command : commandsList)
+            if (command.isMyCommand(commandPrefix))
+                return command.getCommandType();
+        return null;
+    }
+
+    public String getMainAlias(String commandPrefix) {
+        for (CommandGestor command : commandsList) {
+            if (command.isMyCommand(commandPrefix))
+                return command.getMainAlias();
+        }
+        return null;
+    }
+
+    public void executeCommand(String[] commandArgs, String commandPrefix) throws Exception {
+        Commands command = new Commands(member, guild, message, textChannel, commandArgs, commandPrefix);
+        String methodName = "command" + this.mainAlias.toUpperCase();
+        Method method = command.getClass().getMethod(methodName);
+        method.invoke(command);
+    }
+
+    public static String[] getAllAliases(String commandPrefix) {
+        for (CommandGestor command : commandsList)
+            if (command.isMyCommand(commandPrefix))
+                return command.getAliases();
+        return new String[0];
     }
 
     public static void registerCommands() {
@@ -48,35 +78,6 @@ public class CommandManager {
         commandsList.add(new CommandGestor(CommandType.ENABLE, new String[]{"enable", "on"}, true, true));
         commandsList.add(new CommandGestor(CommandType.DISABLE, new String[]{"disable", "off"}, true, true));
         commandsList.add(new CommandGestor(CommandType.TOGGLE, new String[]{"toggle", "switch"}, true, true));
-    }
-
-    public void executeCommand(String[] commandArgs, String commandPrefix) throws Exception {
-        Commands command = new Commands(member, guild, message, textChannel, commandArgs, commandPrefix);
-        String methodName = "command" + this.mainAlias.toUpperCase();
-        Method method = command.getClass().getMethod(methodName);
-        method.invoke(command);
-    }
-
-    public String getMainAlias(String commandPrefix) {
-        for (CommandGestor command : commandsList) {
-            if (command.isMyCommand(commandPrefix))
-                return command.getMainAlias();
-        }
-        return null;
-    }
-
-    public CommandType getCommandType(String commandPrefix) {
-        for (CommandGestor command : commandsList)
-            if (command.isMyCommand(commandPrefix))
-                return command.getCommandType();
-        return null;
-    }
-
-    public static String[] getAllAliases(String commandPrefix) {
-        for (CommandGestor command : commandsList)
-            if (command.isMyCommand(commandPrefix))
-                return command.getAliases();
-        return new String[0];
     }
 
     public static boolean isAValidCommand(String commandPrefix) {
