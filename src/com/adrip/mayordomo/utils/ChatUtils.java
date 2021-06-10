@@ -98,7 +98,7 @@ public class ChatUtils {
 
     public static void sendCreateSyntaxHelp(String prefix, TextChannel textChannel) {
         ChatUtils.sendWarningMessage(textChannel,
-                "Usa !" + prefix + " (personas m�ximas del canal) [Nombre del canal]");
+                "Usa !" + prefix + " (personas máximas del canal) [Nombre del canal]");
     }
 
 }

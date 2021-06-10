@@ -2,6 +2,9 @@ package com.adrip.mayordomo.model;
 
 import com.adrip.mayordomo.Main;
 import com.adrip.mayordomo.exceptions.DatabaseNotAvaliableException;
+import com.adrip.mayordomo.model.dao.ChannelsDAO;
+import com.adrip.mayordomo.model.dao.CommandDAO;
+import com.adrip.mayordomo.model.dao.ServersDAO;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.TextChannel;
 
@@ -12,10 +15,10 @@ public class ModelController {
 
     private static ModelController instance;
 
-    private DBConnection database;
+    private DBConnector database;
 
     private ModelController() throws DatabaseNotAvaliableException {
-        this.database = new DBConnection();
+        this.database = DBConnector.getDBConnector();
     }
 
     public static ModelController getDBAccess() throws DatabaseNotAvaliableException {
@@ -26,7 +29,18 @@ public class ModelController {
 
     public void initDB() throws DatabaseNotAvaliableException {
         this.database.createTables();
-        Main.debug("All tables are created if not yet.");
+    }
+
+    public void registerCommands() throws DatabaseNotAvaliableException {
+        new CommandDAO().registerCommands();
+    }
+
+    public void checkServersAtStart() throws DatabaseNotAvaliableException {
+        new ServersDAO().checkServersAtStart();
+    }
+
+    public void cleanChannelsTableAtStart() throws DatabaseNotAvaliableException {
+        new ChannelsDAO().cleanChannelsTableAtStart();
     }
 
     public String getPrefix(Guild guild) throws DatabaseNotAvaliableException {
@@ -34,7 +48,7 @@ public class ModelController {
     }
 
     public void setPrefix(Guild guild, String prefix) throws DatabaseNotAvaliableException {
-        database.changePrefix(guild, prefix);
+        //database.changePrefix(guild, prefix);
     }
 
     public boolean getUniqueMode(Guild guild) throws DatabaseNotAvaliableException {
@@ -42,7 +56,7 @@ public class ModelController {
     }
 
     public void setUniqueMode(Guild guild, boolean unique) throws DatabaseNotAvaliableException {
-        database.changeMode(guild, unique);
+        //database.changeMode(guild, unique);
     }
 
     public TextChannel getTextChannel(Guild guild) throws DatabaseNotAvaliableException {

@@ -2,14 +2,15 @@ package com.adrip.mayordomo.model;
 
 import com.adrip.mayordomo.Main;
 import com.adrip.mayordomo.exceptions.DatabaseNotAvaliableException;
-import net.dv8tion.jda.api.entities.Guild;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-public class DBConnection {
+public class DBConnector {
+
+    private static DBConnector instance;
 
     private String ip;
 
@@ -34,13 +35,18 @@ public class DBConnection {
         }
     }
 
-    public DBConnection() throws DatabaseNotAvaliableException {
+    private DBConnector() throws DatabaseNotAvaliableException {
         this.ip = Main.getDatabaseHost();
         this.dbName = Main.getDatabaseName();
         this.port = Main.getDatabasePort();
         this.user = Main.getDatabaseUser();
         this.password = Main.getDatabasePassword();
         this.openConnection();
+    }
+
+    public static DBConnector getDBConnector() throws DatabaseNotAvaliableException {
+        if (instance == null) instance = new DBConnector();
+        return instance;
     }
 
     public Connection openConnection() throws DatabaseNotAvaliableException {
@@ -61,11 +67,6 @@ public class DBConnection {
     }
 
     private void tryToConnect() throws SQLException {
-        System.out.println(this.ip);
-        System.out.println(this.port);
-        System.out.println(this.dbName);
-        System.out.println(this.user);
-        System.out.println(this.password);
         this.connection =
                 DriverManager.getConnection("jdbc:mysql://" + this.ip + ":" + this.port + "/" + this.dbName +
                         "?autoReconnect=true" + "&" + "serverTimezone=CET", this.user, this.password);
@@ -73,15 +74,6 @@ public class DBConnection {
 
     public void closeConnection() {
         this.connection = null;
-    }
-
-    public void changePrefix(Guild guild, String prefix) throws DatabaseNotAvaliableException {
-        this.openConnection();
-
-    }
-
-    public void changeMode(Guild guild, boolean unique) throws DatabaseNotAvaliableException {
-        this.openConnection();
     }
 
     public void createTables() throws DatabaseNotAvaliableException {
@@ -97,18 +89,15 @@ public class DBConnection {
             stat.close();
         } catch (SQLException | DatabaseNotAvaliableException e) {
             try { if (stat != null) stat.close(); } catch (SQLException ignored) {}
-            e.printStackTrace();
             throw new DatabaseNotAvaliableException(e.getMessage());
         }
+        Main.debug("All tables are created if not yet.");
     }
 
     public void createChannelsTable(Statement stat) throws DatabaseNotAvaliableException, SQLException {
         try {
             /* Se crea la tabla de guilds-channels. */
-            stat.executeUpdate("CREATE TABLE IF NOT EXISTS `" + this.dbName + "`.`Channels`(" + "`ChannelsID` int " +
-                    "AUTO_INCREMENT PRIMARY KEY" + ",`Guild` VARCHAR(30) NOT NULL CHECK (REGEXP_LIKE (`Guild`, " +
-                    "'^[0-9]$'))" + ", `Channel` VARCHAR(30) NOT NULL CHECK (REGEXP_LIKE (`Channel`,'^[0-9]$'))" + ")" +
-                    "ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=COMPACT;");
+            stat.executeUpdate("CREATE TABLE IF NOT EXISTS `" + this.dbName + "`.`channels`(" + "`ChannelsID` int " + "AUTO_INCREMENT PRIMARY KEY" + ",`Guild` VARCHAR(30) NOT NULL CHECK (REGEXP_LIKE (`Guild`, " + "'^[0-9]$'))" + ", `Channel` VARCHAR(30) NOT NULL CHECK (REGEXP_LIKE (`Channel`,'^[0-9]$'))" + ")" + "ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=COMPACT;");
         } catch (SQLException e) {
             throw new DatabaseNotAvaliableException("Couldn't create channels table.");
         }
@@ -117,7 +106,7 @@ public class DBConnection {
     private void createCommandsTable(Statement stat) throws DatabaseNotAvaliableException {
         try {
             /* Se crea la tabla de comandos con su nombre como clave primaria. */
-            stat.executeUpdate("CREATE TABLE IF NOT EXISTS `" + this.dbName + "`.`Commands`(" + "`Name` VARCHAR(40) " + "PRIMARY KEY CHECK (REGEXP_LIKE (`Name`,'^[A-Z]$'))" + ", `Admin` BOOLEAN NOT NULL" + ", " + "`Activation` BOOLEAN NOT NULL" + ")ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=COMPACT;");
+            stat.executeUpdate("CREATE TABLE IF NOT EXISTS `" + this.dbName + "`.`commands`(" + "`Name` VARCHAR(40) " + "PRIMARY KEY CHECK (REGEXP_LIKE (`Name`,'[A-Z]'))" + ", `Admin` BOOLEAN NOT NULL" + ", " + "`Activation` BOOLEAN NOT NULL" + ")ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=COMPACT;");
         } catch (SQLException e) {
             throw new DatabaseNotAvaliableException("Couldn't create commands table.");
         }
@@ -126,9 +115,9 @@ public class DBConnection {
     private void createCommandsAliasesTable(Statement stat) throws DatabaseNotAvaliableException {
         try {
             /* Se crea la tabla de alias para cada comando (Atributo multivalor). */
-            stat.executeUpdate("CREATE TABLE IF NOT EXISTS `" + this.dbName + "`.`CommandsAliases`(" + "`Name` " +
-                    "VARCHAR(40) CHECK (REGEXP_LIKE (`Name`,'^[A-Z]$'))" + ", `Alias` VARCHAR(40) NOT NULL CHECK " +
-                    "(REGEXP_LIKE (`Alias`,'^[A-Z]$'))" + ", PRIMARY KEY(`Name`, `Alias`)" + ")ENGINE=InnoDB DEFAULT "
+            stat.executeUpdate("CREATE TABLE IF NOT EXISTS `" + this.dbName + "`.`commandsaliases`(" + "`Name` " +
+                    "VARCHAR(40) CHECK (REGEXP_LIKE (`Name`, '[A-Z]'))" + ", `Alias` VARCHAR(40) NOT NULL CHECK " +
+                    "(REGEXP_LIKE (`Alias`, '[A-Z]'))" + ", PRIMARY KEY(`Name`, `Alias`)" + ")ENGINE=InnoDB DEFAULT "
                     + "CHARSET=utf8 ROW_FORMAT=COMPACT;");
         } catch (SQLException e) {
             throw new DatabaseNotAvaliableException("Couldn't create commands-aliases table.");
@@ -138,18 +127,33 @@ public class DBConnection {
     private void createServersTable(Statement stat) throws DatabaseNotAvaliableException {
         try {
             /* Se crea la tabla de informacion de servers. */
-            stat.executeUpdate("CREATE TABLE IF NOT EXISTS `" + this.dbName + "`.`Servers`("
-                    + "`ServersID` int AUTO_INCREMENT PRIMARY KEY" +
-                    ",`Guild` VARCHAR(30) NOT NULL CHECK (REGEXP_LIKE (`Guild`, '^[0-9]$'))" +
-                    ",`Language` CHAR(2)" +
-                    ",`Unique` TINYINT NOT NULL DEFAULT 0" +
-                    ",`UniqueChannel` VARCHAR(30) NOT NULL CHECK (REGEXP_LIKE (`UniqueChannel`,'^[0-9]$'))" +
-                    ")ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=COMPACT;");
+            stat.executeUpdate("CREATE TABLE IF NOT EXISTS `" + this.dbName + "`.`servers`(" + "`Guild` VARCHAR(30) " +
+                    "PRIMARY KEY NOT NULL CHECK (REGEXP_LIKE (`Guild`, " + "'[0-9]'))" + ",`Prefix` VARCHAR(5) NOT NULL DEFAULT '!',`Language` CHAR(2) NOT NULL DEFAULT 'EN'" + "," +
+                    "`Unique` BOOLEAN NOT NULL DEFAULT 0" + ",`UniqueChannel" + "` VARCHAR(30) CHECK (REGEXP_LIKE " +
+                    "(`UniqueChannel`,'[0-9]'))" + ")ENGINE=InnoDB " + "DEFAULT CHARSET=utf8 ROW_FORMAT=COMPACT;");
         } catch (SQLException e) {
-            e.printStackTrace();
             throw new DatabaseNotAvaliableException("Couldn't create guilds table.");
         }
     }
 
+    public String getIp() {
+        return this.ip;
+    }
+
+    public String getDbName() {
+        return this.dbName;
+    }
+
+    public int getPort() {
+        return this.port;
+    }
+
+    public String getUser() {
+        return this.user;
+    }
+
+    public String getPassword() {
+        return this.password;
+    }
 
 }

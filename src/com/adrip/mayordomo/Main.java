@@ -2,12 +2,11 @@ package com.adrip.mayordomo;
 
 import com.adrip.mayordomo.channels.ChannelListener;
 import com.adrip.mayordomo.commands.CommandListener;
-import com.adrip.mayordomo.commands.CommandManager;
 import com.adrip.mayordomo.commands.ConsoleCommandHelper;
 import com.adrip.mayordomo.config.Config;
-import com.adrip.mayordomo.model.ModelController;
 import com.adrip.mayordomo.exceptions.ConfigFailsException;
 import com.adrip.mayordomo.exceptions.DatabaseNotAvaliableException;
+import com.adrip.mayordomo.model.ModelController;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.OnlineStatus;
@@ -19,6 +18,9 @@ import javax.security.auth.login.LoginException;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.sql.Date;
+import java.text.SimpleDateFormat;
+import java.time.Instant;
 import java.util.LinkedList;
 import java.util.StringTokenizer;
 
@@ -43,23 +45,29 @@ public class Main {
         /* Se mapean todos los campos de los ficheros de configuracion. */
         Main.startConfig();
 
-        /* Se registran los comandos con sus alias. */
-        CommandManager.registerCommands();
-        /* Se inicia la conexcion con la base de datos. */
-        ModelController.getDBAccess().initDB();
-
         /* Se construye el objeto JDA con el token obtenido de la configuracion y los listeners necesarios. */
         JDABuilder builder = JDABuilder.createDefault(Main.token).setEnabledIntents(GatewayIntent.GUILD_MEMBERS,
-                GatewayIntent.GUILD_VOICE_STATES, GatewayIntent.GUILD_EMOJIS,
-                GatewayIntent.GUILD_MESSAGES, GatewayIntent.GUILD_MESSAGE_REACTIONS,
-                GatewayIntent.DIRECT_MESSAGES, GatewayIntent.DIRECT_MESSAGE_REACTIONS)
-                .setMemberCachePolicy(MemberCachePolicy.ALL);
+                GatewayIntent.GUILD_VOICE_STATES, GatewayIntent.GUILD_EMOJIS, GatewayIntent.GUILD_MESSAGES,
+                GatewayIntent.GUILD_MESSAGE_REACTIONS, GatewayIntent.DIRECT_MESSAGES,
+                GatewayIntent.DIRECT_MESSAGE_REACTIONS).setMemberCachePolicy(MemberCachePolicy.ALL);
         builder.addEventListeners(new ChannelListener());
         builder.addEventListeners(new CommandListener());
         builder.setToken(Main.token);
         Main.jda = builder.build();
         builder.setAutoReconnect(true);
         builder.setRequestTimeoutRetry(false);
+
+        /* Se inicia la conexion con la base de datos. */
+        ModelController controller = ModelController.getDBAccess();
+
+        /* Se duerme el proceso 500ms para que JDA cargue la lista de servidores. */
+        try { Thread.sleep(500); } catch (InterruptedException e) { e.printStackTrace(); }
+
+        /* Se crean tablas y registran los valores que estas tienen que tener por defecto. */
+        controller.initDB();
+        controller.registerCommands();
+        controller.checkServersAtStart();
+        controller.cleanChannelsTableAtStart();
 
         /* Se marcan las opciones visuales iniciales (Reconfigurables por terminal). */
         Main.setListeningActivity("tus necesidades.");
@@ -130,7 +138,9 @@ public class Main {
 
     public static void debug(String input) {
         if (debug)
-            System.out.println(input);
+            System.out.println("[" + new SimpleDateFormat("dd/MM/yyyy HH:mm").format(Date.from(Instant.now())) + "]: "
+                    + input);
+
     }
 
     private void readChatCommandsFromStdIn() {
@@ -150,8 +160,7 @@ public class Main {
                     debug("Cannot access to console");
                 }
             }
-            if (input != null)
-                processConsoleCommand(input);
+            if (input != null) processConsoleCommand(input);
         }
     }
 
@@ -161,8 +170,7 @@ public class Main {
             LinkedList<String> commandArgs = new LinkedList<>();
             String commandPrefix = st.nextToken().toLowerCase();
             if (ConsoleCommandHelper.isAValidConsoleCommand(commandPrefix)) {
-                while (st.hasMoreTokens())
-                    commandArgs.add(st.nextToken());
+                while (st.hasMoreTokens()) commandArgs.add(st.nextToken());
                 try {
                     String[] commandsArray = new String[commandArgs.size()];
                     ConsoleCommandHelper.execute(commandPrefix, commandsArray);
