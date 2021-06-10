@@ -20,9 +20,10 @@ Bot para la gestión de canales temporales en discord
 ## Uso 📋
 
 ## Tecnologías 🔧
+El proyecto ha sido realizado sobre el lenguaje java con una version SDK 15.0.2 junto a las <a href="/lib">librerias</a> <a href="https://github.com/DV8FromTheWorld/JDA">JDA</a> y <a href="https://logging.apache.org/log4j/2.x/">L4J</a> <a href="https://es.wikipedia.org/wiki/MySQL">MySQL</a> para la gestión de la base de datos relacional.
 
 ## Autores ✒️
--   Adrián Pérez García.<br>
+-   Adrián Pérez García.<br><br>
 -   Iconos diseñados por <a href="https://www.freepik.com" title="Freepik"> Freepik. </a><br>
 
 ##
